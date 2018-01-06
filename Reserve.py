@@ -36,7 +36,7 @@ class Reserve:
     #                - getTailleReserve(supprimerReserve(reserve,carte)) == getTailleReserve(reserve,carte) - 1
     def supprimerReserve(self,carte):
         self.reserve.remove(carte)
-        setZoneCarte(carte,"")
+        Carte.setZoneCarte(carte,"")
         return self.reserve
 
     # getFirstReserve : Reserve -> Carte

@@ -7,6 +7,10 @@
 # Gestion des joueurs (joueur courant vs adverse) => utilisation de variables globales
 # A l'init, manque certaines créations d'instances d'objets (ex : Joueur, Picohe)
 # Imports ?
+#Manque de la position dans la récupération de la liste des cartes attaquables
+#Récupération de la position des cartes sur le cbd avec la fonction getAttaquants
+#Gestion des erreurs de saisie ?
+# Manipulation de string au lieu de d'objets après saisie
 # -----
 
 #!/usr/bin/python
@@ -64,26 +68,32 @@ def deployer(joueur, carte, position, cdb):
     if ((joueur == joueur1) and (position <= 6) and (position >= 1)) or (
             (joueur == joueur2) and (position <= 12) and (position >= 7)):  # Si les cases du cdb correspondent au donné
 
-        if cdb.cdb[str(position)]:  # Si il y a une carte à la position voulue
-            ancienne = getCarteCDB(cdb, position)  # On récupère le carte présente à la position
-            reserve = getReserve(joueur)  # On récupère la réserve du joueur
-            ajouterReserve(reserve, ancienne)  # On ajoute l'ancienne carte à la réserve du joueur
+        zoneCarte = Carte.getZoneCarte(carte)
+        
+        if (CDB.estOccupee(cdb, str(position))):  # Si il y a une carte à la position voulue
+            ancienne = CDB.getCarteCDB(cdb, position)  # On récupère le carte présente à la position
+            reserve = Joueur.getReserve(joueur)  # On récupère la réserve du joueur
+            Reserve.ajouterReserve(reserve, ancienne)  # On ajoute l'ancienne carte à la réserve du joueur
 
         if (position == 4) or (position == 5) or (position == 6) or (position == 10) or (position == 11) or (
             position == 12):  # Si la position est à l'arrière
             front = position - 3  # Position correspondant à l'avant
 
             if (CDB.estOccupee(cdb, front)):  # Si la position devant est occupée
-                cdb.cdb[str(position)] = carte  # Ajout de la carte à la position donnée sur le champ de bataille
+                cdb.ajouterCDB(carte,position)  # Ajout de la carte à la position donnée sur le champ de bataille
 
             else:  # Si la position devant est vide
-                cdb.cdb[str(front)] = carte  # Ajout de la carte à la position sur le front
+                cdb.ajouterCDB(carte,str(front)) # Ajout de la carte à la position sur le front
 
         else:
-            cdb.cdb[str(position)] = carte  # Ajout de la carte à la position donnée sur le champ de bataille
+            cdb.ajouterCDB(carte,position)  # Ajout de la carte à la position donnée sur le champ de bataille
 
+        if (zoneCarte == "reserve"):
+            Reserve.supprimerReserve(Joueur.getReserve(joueur),carte)
+        else:
+            Main.supprimerMain(Joueur.getMain(joueur),carte)
     else:
-        return ERREUR
+        return 0
 
 
 # mourir : Joueur x Carte x CDB
@@ -93,13 +103,13 @@ def mourir(joueur, carte, cdb):
     trouve = False
     while (
             i < 13 and trouve == False):  # Tant qu'on est pas à la fin du Champ de bataille et que la carte n'a pas été supprimée
-        c = getCarteCDB(cdb, i)  # On récupère la carte à une position
+        c = CDB.getCarteCDB(cdb, i)  # On récupère la carte à une position
 
-        if (getPDV(c) < 0) and (
+        if (Joueur.getPDV(c) < 0) and (
             c == carte):  # Si les points de vie de la carte sur cette position sont négatifs, et que c'est la carte donnée en paramètres
-            supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
-            cimetiere = getCimetiere(joueur)  # On récupère le cimetière du joueur
-            ajouterCimetiere(cimetiere, carte)  # On ajoute la carte au cimetière
+            CDB.supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
+            cimetiere = Joueur.getCimetiere(joueur)  # On récupère le cimetière du joueur
+            Cimetiere.ajouterCimetiere(cimetiere, carte)  # On ajoute la carte au cimetière
             trouve = True
         i = i + 1  # Incrémentation du compteur
 
@@ -111,13 +121,13 @@ def capturer(cdb, joueur, carte):
     trouve = False
     while (
             i < 13 and trouve == False):  # Tant qu'on est pas à la fin du Champ de bataille et que la carte n'a pas été supprimée
-        c = getCarteCDB(cdb, i)  # On récupère la carte à une position
+        c = CDB.getCarteCDB(cdb, i)  # On récupère la carte à une position
 
-        if (getPDV(c) == 0) and (
+        if (Joueur.getPDV(c) == 0) and (
             c == carte):  # Si les points de vie de la carte sur cette position sont nuls, et que c'est la carte donnée en paramètres
-            supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
-            royaume = getRoyaume(joueur)  # On récupère le royaume du joueur
-            ajouterRoyaume(royaume, carte)  # On ajoute la carte au royaume
+            CDB.supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
+            royaume = Joueur.getRoyaume(joueur)  # On récupère le royaume du joueur
+            Royaume.ajouterRoyaume(royaume, carte)  # On ajoute la carte au royaume
             trouve = True
         i = i + 1  # Incrémentation du compteur
 
@@ -227,134 +237,133 @@ def getCarteAttaquable(joueur, cdb, carte, position):  # un entier qui représen
             # la fonction en dessous calcule en fonction de la position du roi les emplacements qu'il peut atteindre
             if (position == 2):
                 if CDB.estOccupee(cdb, position + 6 - 1):
-                    res = CDB.getCarteCDB(cdb, (position - 1 + 6))
-                elif CDB.estOccupee(cdb, position + 6):
-                    res = res + [CDB.getCarteCDB(cdb, (position + 6))]
-                elif CDB.estOccupee(cdb, position + 6 + 1):
-                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 1))]
-                elif CDB.estOccupee(cdb, position + 6 + 3):
-                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 3))]
+                    res.append(CDB.getCarteCDB(cdb, (position - 1 + 6)))
+                if CDB.estOccupee(cdb, position + 6):
+                    res.append(CDB.getCarteCDB(cdb, (position + 6)))
+                if CDB.estOccupee(cdb, position + 6 + 1):
+                    res.append(CDB.getCarteCDB(cdb, (position + 6 + 1)))
+                if CDB.estOccupee(cdb, position + 6 + 3):
+                    res.append(CDB.getCarteCDB(cdb, (position + 6 + 3)))
 
             elif (position == 1):
                 if CDB.estOccupee(cdb, position + 6):
-                    res = CDB.getCarteCDB(cdb, (position + 6))
-                elif CDB.estOccupee(cdb, position + 6 + 1):
-                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 1))]
-                elif CDB.estOccupee(cdb, position + 6 + 3):
-                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 3))]
+                    res.append(CDB.getCarteCDB(cdb, (position + 6)))
+                if CDB.estOccupee(cdb, position + 6 + 1):
+                    res.append(CDB.getCarteCDB(cdb, (position + 6 + 1)))
+                if CDB.estOccupee(cdb, position + 6 + 2):
+                    res.append(CDB.getCarteCDB(cdb, (position + 6 + 2)))
+                if CDB.estOccupee(cdb, position + 6 + 3):
+                    res.append(CDB.getCarteCDB(cdb, (position + 6 + 3)))
 
             elif (position == 3):
                 if CDB.estOccupee(cdb, position + 6 - 1):
-                    res = CDB.getCarteCDB(cdb, (position - 1 + 6))
-                elif CDB.estOccupee(cdb, position + 6):
-                    res = res + [CDB.getCarteCDB(cdb, (position + 6))]
-                elif CDB.estOccupee(cdb, position + 6 + 3):
-                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 3))]
+                    res.append(CDB.getCarteCDB(cdb, (position - 1 + 6)))
+                if CDB.estOccupee(cdb, position + 6):
+                    res.append(CDB.getCarteCDB(cdb, (position + 6)))
+                if CDB.estOccupee(cdb, position + 6 - 2):
+                    res.append(CDB.getCarteCDB(cdb, (position - 2 + 6)))
+                if CDB.estOccupee(cdb, position + 6 + 3):
+                    res.append(CDB.getCarteCDB(cdb, (position + 3 + 6)))
             else:
                 if CDB.estOccupee(cdb, position + 3):
-                    res = [CDB.getCarteCDB(cdb, (position + 3))]
+                    res.append(CDB.getCarteCDB(cdb, (position + 3)))
         # on calcule les cartes a portée des gardes et des soldats
         elif (Carte.getTypeCarte(carte) == "soldat") or (Carte.getTypeCarte(carte) == "garde"):
             if position in (1, 2, 3):
                 if CDB.estOccupee(cdb, position + 6):
-                    res = [CDB.getCarteCDB(cdb, (position + 6))]
+                    res.append(CDB.getCarteCDB(cdb, (position + 6)))
         # on calcule les cartes a portée des arches, pour cela on fait tous les cas possibles
         else:
             if position == 1:
                 if CDB.estOccupee(cdb, 11):
-                    res = [CDB.getCarteCDB(cdb, 11)]
-                elif CDB.estOccupee(cdb, 9):
-                    res = res + [CDB.getCarteCDB(cdb, 9)]
+                    res.append(CDB.getCarteCDB(cdb, 11))
+                if CDB.estOccupee(cdb, 9):
+                    res.append(CDB.getCarteCDB(cdb, 9))
 
             elif position == 2:
                 if CDB.estOccupee(cdb, 10):
-                    res = [CDB.getCarteCDB(cdb, 10)]
-                elif CDB.estOccupee(CBD, 12):
-                    res = res[CDB.getCarteCDB(cdb, 12)]
+                    res.append(CDB.getCarteCDB(cdb, 10))
+                if CDB.estOccupee(CBD, 12):
+                    res.append(CDB.getCarteCDB(cdb, 12))
 
             elif position == 3:
                 if CDB.estOccupee(cdb, 7):
-                    res = [CDB.getCarteCDB(cdb, 7)]
-                elif CDB.estOccupee(cdb, 11):
-                    res = res + [CDB.getCarteCDB(cdb, 11)]
+                    res.append(CDB.getCarteCDB(cdb, 7))
+                if CDB.estOccupee(cdb, 11):
+                    res.append(CDB.getCarteCDB(cdb, 11))
 
             elif position == 4 or position == 6:
                 if CDB.estOccupee(cdb, 8):
-                    res = [CDB.getCarteCDB(cdb, 8)]
+                    res.append(CDB.getCarteCDB(cdb, 11))
 
             else:
                 if CDB.estOccupee(cdb, 7):
-                    res = [CDB.getCarteCDB(cdb, 7)]
-                elif CDB.estOccupee(cdb, 9):
-                    res = res + [CDB.getCarteCDB(cdb, 9)]
+                    res.append(CDB.getCarteCDB(cdb, 7))
+                if CDB.estOccupee(cdb, 9):
+                    res.append(CDB.getCarteCDB(cdb, 9))
     else:
         if (Carte.getTypeCarte(carte) == "roi"):
             # la fonction en dessous calcule en fonction de la position du roi les emplacements qu'il peut atteindre
             if (position == 8):
                 if CDB.estOccupee(cdb, position - 6 - 1):
-                    res = CDB.getCarteCDB(cdb, (position - 1 - 6))
-                elif CDB.estOccupee(cdb, position - 6):
-                    res = res + [CDB.getCarteCDB(cdb, (position - 6))]
-                elif CDB.estOccupee(cdb, position - 6 + 1):
-                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 1))]
-                elif CDB.estOccupee(cdb, position - 6 + 3):
-                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 3))]
+                    res.append(CDB.getCarteCDB(cdb, (position - 1 - 6)))
+                if CDB.estOccupee(cdb, position - 6):
+                    res.append(CDB.getCarteCDB(cdb, (position - 6)))
+                if CDB.estOccupee(cdb, position - 6 + 1):
+                    res.append(CDB.getCarteCDB(cdb, (position + 1 - 6)))
 
             elif (position == 7):
                 if CDB.estOccupee(cdb, position - 6):
-                    res = CDB.getCarteCDB(cdb, (position - 6))
-                elif CDB.estOccupee(cdb, position - 6 + 1):
-                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 1))]
-                elif CDB.estOccupee(cdb, position - 6 + 3):
-                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 3))]
+                    res.append(CDB.getCarteCDB(cdb, (position - 6)))
+                if CDB.estOccupee(cdb, position - 6 + 1):
+                    res.append(CDB.getCarteCDB(cdb, (position + 1 - 6)))
+                if CDB.estOccupee(cdb, position - 6 + 2):
+                    res.append(CDB.getCarteCDB(cdb, (position + 2 - 6)))
 
             elif (position == 9):
                 if CDB.estOccupee(cdb, position - 6 - 1):
-                    res = CDB.getCarteCDB(cdb, (position - 1 - 6))
-                elif CDB.estOccupee(cdb, position - 6):
-                    res = res + [CDB.getCarteCDB(cdb, (position - 6))]
-                elif CDB.estOccupee(cdb, position - 6 + 3):
-                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 3))]
-            else:
-                if CDB.estOccupee(cdb, position - 9):
-                    res = [CDB.getCarteCDB(cdb, (position - 9))]
+                    res.append(CDB.getCarteCDB(cdb, (position - 1 - 6)))
+                if CDB.estOccupee(cdb, position - 6):
+                    res.append(CDB.getCarteCDB(cdb, (position - 6)))
+                if CDB.estOccupee(cdb, position - 6 - 2):
+                    res.append(CDB.getCarteCDB(cdb, (position - 2 - 6)))
 
 
                     # on calcule les cartes a porte des gardes et des soldats
         elif (Carte.getTypeCarte(carte) == "soldat") or (Carte.getTypeCarte(carte) == "garde"):
             if position in (7, 8, 9):
                 if CDB.estOccupee(cdb, position - 6):
-                    res = [CDB.getCarteCDB(cdb, (position - 6))]
+                    res.append(CDB.getCarteCDB(cdb, (position - 6)))
 
         # on calcule les cartes a porte des arches, pour cela on fait tous les cas possibles
         else:
             if position == 9:
                 if CDB.estOccupee(cdb, 5):
-                    res = [CDB.getCarteCDB(cdb, 5)]
-                elif CDB.estOccupee(cdb, 1):
-                    res = res + [CDB.getCarteCDB(cdb, 1)]
+                    res.append(CDB.getCarteCDB(cdb, 5))
+                if CDB.estOccupee(cdb, 1):
+                    res.append(CDB.getCarteCDB(cdb, 1))
 
             elif position == 8:
                 if CDB.estOccupee(cdb, 6):
-                    res = [CDB.getCarteCDB(cdb, 6)]
-                elif CDB.estOccupee(CBD, 4):
-                    res = res[CDB.getCarteCDB(cdb, 4)]
+                    res.append(CDB.getCarteCDB(cdb, 6))
+                if CDB.estOccupee(CBD, 4):
+                    res.append(CDB.getCarteCDB(cdb, 4))
 
             elif position == 7:
                 if CDB.estOccupee(cdb, 5):
-                    res = [CDB.getCarteCDB(cdb, 5)]
-                elif CDB.estOccupee(cdb, 3):
-                    res = res + [CDB.getCarteCDB(cdb, 3)]
+                    res.append(CDB.getCarteCDB(cdb, 5))
+                if CDB.estOccupee(cdb, 3):
+                    res.append(CDB.getCarteCDB(cdb, 3))
 
             elif position == 12 or position == 10:
                 if CDB.estOccupee(cdb, 2):
-                    res = [CDB.getCarteCDB(cdb, 2)]
+                    res.append(CDB.getCarteCDB(cdb, 2))
 
             else:
                 if CDB.estOccupee(cdb, 3):
-                    res = [CDB.getCarteCDB(cdb, 3)]
+                    res.append(CDB.getCarteCDB(cdb, 3))
                 elif CDB.estOccupee(cdb, 1):
-                    res = res + [CDB.getCarteCDB(cdb, 1)]
+                    res.append(CDB.getCarteCDB(cdb, 1))
 
     return res
 
@@ -390,6 +399,9 @@ joueur1 = Joueur()
 joueur1.creerJoueur()
 joueur2 = Joueur()
 joueur2.creerJoueur()
+
+joueurCourant =joueur1
+joueurAdverse = joueur2
 
 # Création du champ de bataille
 print('Création du champ de bataille')
@@ -448,13 +460,15 @@ print('Joueur 1 quelle carte voulez-vous placer sur le champ de bataille ? et o�
 print(Main.mainToString(Joueur.getMain(joueur1)))
 carte1 = input('Carte = ')
 position1 = int(input('Position = '))
-deployer(joueur1,carte1,position1,cdb)
+carteObj1 = Main.getCarteMain(Joueur.getMain(joueur1), carte1)
+deployer(joueur1,carteObj1,position1,cdb)
 
 print('Joueur 2 quelle carte voulez-vous placer sur le champ de bataille ? et où voulez-vous la placer ?')
 print(Main.mainToString(Joueur.getMain(joueur2)))
 carte2 = input('Carte = ')
 position2 = int(input('Position = '))
-deployer(joueur2,carte2,position2,cdb)
+carteObj2 = Main.getCarteMain(Joueur.getMain(joueur2), carte2)
+deployer(joueur2,carteObj2,position2,cdb)
 
 # On affiche la main du joueur, puis on lui demande de choisir une des cartes qu'il possède dans sa main. On met ensuite cette carte dans sa reserve
 
@@ -471,9 +485,6 @@ Joueur.mettreEnReserve(joueur2,Main.getCarteMain(Joueur.getMain(joueur2),carte22
 #### Debut du jeu :
 
 print('Debut du jeu')
-
-joueurCourant =joueur1
-joueurAdverse = joueur2
 
 # conscription fait référence au fait que le joueur peut, au cas où il n'a plus d'unités sur le champ de bataille, prendre dans sa réserve ou son royaume. Dans le cas où c'est possible de le faire conscritpion est égal à "possible", "impossible" sinon.
 conscription = "possible"
@@ -561,6 +572,8 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                             attaqueDone = False
                             
                             if attaqueDone == False:
+                                print(i)
+                                print(j)
                                 
                                 print("Voulez vous attaquer ",Carte.carteToString(j)," avec ",Carte.carteToString(i)," ? pour oui taper 1 pour non taper 0")
                                 
@@ -589,9 +602,8 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                                         if Carte.getPDV(cartepassif) <= 0 :
                                             
                                             mourir(getJoueurAdverse(),cartepassif,cdb)
-                                    
-                                
-
+                                else:
+                                    print("ERREUR car pas d'autres carte a attaquer")
                 # on modifie l'état de la carte qui vient d'attaquer, qui passe de l'état défensif à l'état offensif
                 Carte.setPosCarte(carteactif,offensive)
                     
