@@ -52,4 +52,4 @@ class Reserve:
     # ReserveIsEmpty : Reserve -> boolean
     # description : renvoie vrai si la Reserve est vide. Faux sinon
     def ReserveIsEmpty(self):
-        return getTailleReserve(self.reserve) == 0
+        return self.getTailleReserve() == 0

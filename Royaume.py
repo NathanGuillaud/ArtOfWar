@@ -31,7 +31,8 @@ class Royaume:
     #               - RoyaumeIsEmpty(ajouterRoyaume(reserve,carte)) == False
     def ajouterRoyaume(self, carte):
         if carte.carte["type"] == "roi":
-            return erreur
+            print("Le roi ne peut pas etre ajouté au Royaume !")
+            return self.royaume
         else:
             self.royaume[carte.carte["type"]].append(carte.carte)
             Carte.setZoneCarte(carte,"royaume")

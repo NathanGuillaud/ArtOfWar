@@ -1,3 +1,14 @@
+# -----
+# Manque classe lors de l'appel des fonctions
+# Certains objets mal créés : e : newc = Carte.creerSoldat() au lieu de newc = Carte() puis newc.creerSoldat() 
+# Inversions des paramètres d'appel dans les fonctions
+# Nombre de paramètres erronné dana sle sappels de fonctions
+# Objet passé au fonctions pas du bon type (e : <str> carte au lieu de <Carte> carte
+# Gestion des joueurs (joueur courant vs adverse) => utilisation de variables globales
+# A l'init, manque certaines créations d'instances d'objets (ex : Joueur, Picohe)
+# Imports ?
+# -----
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -40,9 +51,8 @@ def getJoueurAdverse():
 # changeJoueurCourant :
 # description : change le joueur courant en joueur adverse et inversement, change les variables joueurcourant et joueuradverse,
 def changeJoueurCourant():
-    x = joueurCourant
-    joueurCourant = joueurAdverse
-    joueurAdverse = x
+    global joueurCourant, joueurAdverse
+    joueurCourant, joueurAdverse = joueurAdverse, joueurCourant
 
 
 # deployer : Joueur x Carte x int x CDB -> Partie
@@ -63,7 +73,7 @@ def deployer(joueur, carte, position, cdb):
             position == 12):  # Si la position est à l'arrière
             front = position - 3  # Position correspondant à l'avant
 
-            if (estOccupee(cdb, front)):  # Si la position devant est occupée
+            if (CDB.estOccupee(cdb, front)):  # Si la position devant est occupée
                 cdb.cdb[str(position)] = carte  # Ajout de la carte à la position donnée sur le champ de bataille
 
             else:  # Si la position devant est vide
@@ -137,22 +147,23 @@ def reinitilisation(joueur, cdb):
                     CDB.ajouterCDB(cdb, newc, i)
     else:
         for i in range(7, 12):
-            if estOccupee(cdb, i):
+            if CDB.estOccupee(cdb, i):
                 c = CDB.getCarteCDB(cdb, i)
-                if Carte.getTypeCarte(c) == "roi":
-                    newc = Carte.creerRoi1()
+                newc = Carte();
+                if c == "roi":
+                    newc.creerRoi1()
                     CDB.ajouterCDB(cdb, newc, i)
 
-                elif Carte.getTypeCarte(c) == "soldat":
-                    newc = Carte.creerSoldat()
+                elif c == "soldat":
+                    newc.creerSoldat()
                     CDB.ajouterCDB(cdb, newc, i)
 
-                elif Carte.getTypeCarte(c) == "archer":
-                    newc = Carte.creerArcher()
+                elif c == "archer":
+                    newc.creerArcher()
                     CDB.ajouterCDB(cdb, newc, i)
 
-                elif Carte.getTypeCarte(c) == "garde":
-                    newc = Carte.creerGarde()
+                elif c == "garde":
+                    newc .creerGarde()
                     CDB.ajouterCDB(cdb, newc, i)
 
     return cdb
@@ -176,16 +187,19 @@ def CDBIsEmpty(joueur, cdb):
 # getAttaquants : Joueur x CDB -> List[Carte]
 # description : renvoye la liste des cartes du joueur qui sont sur le champ de bataille
 def getAttaquants(joueur, cdb):
-    lst = []
+    lstCarte = []
+    lstPos = []
     if joueur == joueur1:
         for i in range(1, 7):
-            if estOccupee(cdb, i):
-                lst.append(getCarteCDB(cdb, i))
+            if CDB.estOccupee(cdb, i):
+                lstCarte.append(CDB.getCarteCDB(cdb, i))
+                lstPos.append(i)
     else:
         for i in range(7, 12):
-            if estOccupee(cdb, i):
-                lst.append(getCarteCDB(cdb, i))
-    return lst
+            if CDB.estOccupee(cdb, i):
+                lstCarte.append(CDB.getCarteCDB(cdb, i))
+                lstPos.append(i)
+    return lstCarte,lstPos
 
 
 # executions : joueur x joueur -> bool
@@ -203,144 +217,144 @@ def executions(joueur1, joueur2):
 
 
 # getCarteAttaquable : Joueur x CDB x carte -> List[]
-# description : renvoye la liste des cartes ennemies pouvant etre attaquée par le joueur
+# description : renvoie la liste des cartes ennemies pouvant etre attaquées par le joueur
 def getCarteAttaquable(joueur, cdb, carte, position):  # un entier qui représente la position de la carte sur le cdb
 
     # on calcule la porte pour le roi
     res = []
     if joueur == joueur1:
-        if (getTypeCarte(carte) == "roi"):
-            # la fonction en dessou calcule en fonction de la position du roi les emplacement qu'il peux atteindre
+        if (Carte.getTypeCarte(carte) == "roi"):
+            # la fonction en dessous calcule en fonction de la position du roi les emplacements qu'il peut atteindre
             if (position == 2):
-                if estOccupee(cdb, position + 6 - 1):
-                    res = getCarteCDB(cdb, (position - 1 + 6))
-                elif estOccupee(cdb, position + 6):
-                    res = res + [getCarteCDB(cdb, (position + 6))]
-                elif estOccupee(cdb, position + 6 + 1):
-                    res = res + [getCarteCDB(cdb, (position + 6 + 1))]
-                elif estOccupee(cdb, position + 6 + 3):
-                    res = res + [getCarteCDB(cdb, (position + 6 + 3))]
+                if CDB.estOccupee(cdb, position + 6 - 1):
+                    res = CDB.getCarteCDB(cdb, (position - 1 + 6))
+                elif CDB.estOccupee(cdb, position + 6):
+                    res = res + [CDB.getCarteCDB(cdb, (position + 6))]
+                elif CDB.estOccupee(cdb, position + 6 + 1):
+                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 1))]
+                elif CDB.estOccupee(cdb, position + 6 + 3):
+                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 3))]
 
             elif (position == 1):
-                if estOccupee(cdb, position + 6):
-                    res = getCarteCDB(cdb, (position + 6))
-                elif estOccupee(cdb, position + 6 + 1):
-                    res = res + [getCarteCDB(cdb, (position + 6 + 1))]
-                elif estOccupee(cdb, position + 6 + 3):
-                    res = res + [getCarteCDB(cdb, (position + 6 + 3))]
+                if CDB.estOccupee(cdb, position + 6):
+                    res = CDB.getCarteCDB(cdb, (position + 6))
+                elif CDB.estOccupee(cdb, position + 6 + 1):
+                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 1))]
+                elif CDB.estOccupee(cdb, position + 6 + 3):
+                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 3))]
 
             elif (position == 3):
-                if estOccupee(cdb, position + 6 - 1):
-                    res = getCarteCDB(cdb, (position - 1 + 6))
-                elif estOccupee(cdb, position + 6):
-                    res = res + [getCarteCDB(cdb, (position + 6))]
-                elif estOccupee(cdb, position + 6 + 3):
-                    res = res + [getCarteCDB(cdb, (position + 6 + 3))]
+                if CDB.estOccupee(cdb, position + 6 - 1):
+                    res = CDB.getCarteCDB(cdb, (position - 1 + 6))
+                elif CDB.estOccupee(cdb, position + 6):
+                    res = res + [CDB.getCarteCDB(cdb, (position + 6))]
+                elif CDB.estOccupee(cdb, position + 6 + 3):
+                    res = res + [CDB.getCarteCDB(cdb, (position + 6 + 3))]
             else:
-                if estOccupee(cdb, position + 3):
-                    res = [getCarteCDB(cdb, (position + 3))]
-        # on calcule les cartes a porte des gardes et des soldats
-        elif (getTypeCarte(carte) == "soldat") or (getTypeCarte(carte) == "garde"):
+                if CDB.estOccupee(cdb, position + 3):
+                    res = [CDB.getCarteCDB(cdb, (position + 3))]
+        # on calcule les cartes a portée des gardes et des soldats
+        elif (Carte.getTypeCarte(carte) == "soldat") or (Carte.getTypeCarte(carte) == "garde"):
             if position in (1, 2, 3):
-                if estOccupee(cdb, position + 6):
-                    res = [getCarteCDB(cdb, (position + 6))]
-        # on calcule les cartes a porte des arches, pour cela on fait tous les cas possibles
+                if CDB.estOccupee(cdb, position + 6):
+                    res = [CDB.getCarteCDB(cdb, (position + 6))]
+        # on calcule les cartes a portée des arches, pour cela on fait tous les cas possibles
         else:
             if position == 1:
-                if estOccupee(cdb, 11):
-                    res = [getCarteCDB(cdb, 11)]
-                elif estOccupee(cdb, 9):
-                    res = res + [getCarteCDB(cdb, 9)]
+                if CDB.estOccupee(cdb, 11):
+                    res = [CDB.getCarteCDB(cdb, 11)]
+                elif CDB.estOccupee(cdb, 9):
+                    res = res + [CDB.getCarteCDB(cdb, 9)]
 
             elif position == 2:
-                if estOccupee(cdb, 10):
-                    res = [getCarteCDB(cdb, 10)]
-                elif estOccupee(CBD, 12):
-                    res = res[getCarteCDB(cdb, 12)]
+                if CDB.estOccupee(cdb, 10):
+                    res = [CDB.getCarteCDB(cdb, 10)]
+                elif CDB.estOccupee(CBD, 12):
+                    res = res[CDB.getCarteCDB(cdb, 12)]
 
             elif position == 3:
-                if estOccupee(cdb, 7):
-                    res = [getCarteCDB(cdb, 7)]
-                elif estOccupee(cdb, 11):
-                    res = res + [getCarteCDB(cdb, 11)]
+                if CDB.estOccupee(cdb, 7):
+                    res = [CDB.getCarteCDB(cdb, 7)]
+                elif CDB.estOccupee(cdb, 11):
+                    res = res + [CDB.getCarteCDB(cdb, 11)]
 
             elif position == 4 or position == 6:
-                if estOccupee(cdb, 8):
-                    res = [getCarteCDB(cdb, 8)]
+                if CDB.estOccupee(cdb, 8):
+                    res = [CDB.getCarteCDB(cdb, 8)]
 
             else:
-                if estOccupee(cdb, 7):
-                    res = [getCarteCDB(cdb, 7)]
-                elif estOccupee(cdb, 9):
-                    res = res + [getCarteCDB(cdb, 9)]
+                if CDB.estOccupee(cdb, 7):
+                    res = [CDB.getCarteCDB(cdb, 7)]
+                elif CDB.estOccupee(cdb, 9):
+                    res = res + [CDB.getCarteCDB(cdb, 9)]
     else:
-        if (getTypeCarte(carte) == "roi"):
-            # la fonction en dessou calcule en fonction de la position du roi les emplacement qu'il peux atteindre
+        if (Carte.getTypeCarte(carte) == "roi"):
+            # la fonction en dessous calcule en fonction de la position du roi les emplacements qu'il peut atteindre
             if (position == 8):
-                if estOccupee(cdb, position - 6 - 1):
-                    res = getCarteCDB(cdb, (position - 1 - 6))
-                elif estOccupee(cdb, position - 6):
-                    res = res + [getCarteCDB(cdb, (position - 6))]
-                elif estOccupee(cdb, position - 6 + 1):
-                    res = res + [getCarteCDB(cdb, (position - 6 + 1))]
-                elif estOccupee(cdb, position - 6 + 3):
-                    res = res + [getCarteCDB(cdb, (position - 6 + 3))]
+                if CDB.estOccupee(cdb, position - 6 - 1):
+                    res = CDB.getCarteCDB(cdb, (position - 1 - 6))
+                elif CDB.estOccupee(cdb, position - 6):
+                    res = res + [CDB.getCarteCDB(cdb, (position - 6))]
+                elif CDB.estOccupee(cdb, position - 6 + 1):
+                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 1))]
+                elif CDB.estOccupee(cdb, position - 6 + 3):
+                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 3))]
 
             elif (position == 7):
-                if estOccupee(cdb, position - 6):
-                    res = getCarteCDB(cdb, (position - 6))
-                elif estOccupee(cdb, position - 6 + 1):
-                    res = res + [getCarteCDB(cdb, (position - 6 + 1))]
-                elif estOccupee(cdb, position - 6 + 3):
-                    res = res + [getCarteCDB(cdb, (position - 6 + 3))]
+                if CDB.estOccupee(cdb, position - 6):
+                    res = CDB.getCarteCDB(cdb, (position - 6))
+                elif CDB.estOccupee(cdb, position - 6 + 1):
+                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 1))]
+                elif CDB.estOccupee(cdb, position - 6 + 3):
+                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 3))]
 
             elif (position == 9):
-                if estOccupee(cdb, position - 6 - 1):
-                    res = getCarteCDB(cdb, (position - 1 - 6))
-                elif estOccupee(cdb, position - 6):
-                    res = res + [getCarteCDB(cdb, (position - 6))]
-                elif estOccupee(cdb, position - 6 + 3):
-                    res = res + [getCarteCDB(cdb, (position - 6 + 3))]
+                if CDB.estOccupee(cdb, position - 6 - 1):
+                    res = CDB.getCarteCDB(cdb, (position - 1 - 6))
+                elif CDB.estOccupee(cdb, position - 6):
+                    res = res + [CDB.getCarteCDB(cdb, (position - 6))]
+                elif CDB.estOccupee(cdb, position - 6 + 3):
+                    res = res + [CDB.getCarteCDB(cdb, (position - 6 + 3))]
             else:
-                if estOccupee(cdb, position - 9):
-                    res = [getCarteCDB(cdb, (position - 9))]
+                if CDB.estOccupee(cdb, position - 9):
+                    res = [CDB.getCarteCDB(cdb, (position - 9))]
 
 
                     # on calcule les cartes a porte des gardes et des soldats
-        elif (getTypeCarte(carte) == "soldat") or (getTypeCarte(carte) == "garde"):
+        elif (Carte.getTypeCarte(carte) == "soldat") or (Carte.getTypeCarte(carte) == "garde"):
             if position in (7, 8, 9):
-                if estOccupee(cdb, position - 6):
-                    res = [getCarteCDB(cdb, (position - 6))]
+                if CDB.estOccupee(cdb, position - 6):
+                    res = [CDB.getCarteCDB(cdb, (position - 6))]
 
         # on calcule les cartes a porte des arches, pour cela on fait tous les cas possibles
         else:
             if position == 9:
-                if estOccupee(cdb, 5):
-                    res = [getCarteCDB(cdb, 5)]
-                elif estOccupee(cdb, 1):
-                    res = res + [getCarteCDB(cdb, 1)]
+                if CDB.estOccupee(cdb, 5):
+                    res = [CDB.getCarteCDB(cdb, 5)]
+                elif CDB.estOccupee(cdb, 1):
+                    res = res + [CDB.getCarteCDB(cdb, 1)]
 
             elif position == 8:
-                if estOccupee(cdb, 6):
-                    res = [getCarteCDB(cdb, 6)]
-                elif estOccupee(CBD, 4):
-                    res = res[getCarteCDB(cdb, 4)]
+                if CDB.estOccupee(cdb, 6):
+                    res = [CDB.getCarteCDB(cdb, 6)]
+                elif CDB.estOccupee(CBD, 4):
+                    res = res[CDB.getCarteCDB(cdb, 4)]
 
             elif position == 7:
-                if estOccupee(cdb, 5):
-                    res = [getCarteCDB(cdb, 5)]
-                elif estOccupee(cdb, 3):
-                    res = res + [getCarteCDB(cdb, 3)]
+                if CDB.estOccupee(cdb, 5):
+                    res = [CDB.getCarteCDB(cdb, 5)]
+                elif CDB.estOccupee(cdb, 3):
+                    res = res + [CDB.getCarteCDB(cdb, 3)]
 
             elif position == 12 or position == 10:
-                if estOccupee(cdb, 2):
-                    res = [getCarteCDB(cdb, 2)]
+                if CDB.estOccupee(cdb, 2):
+                    res = [CDB.getCarteCDB(cdb, 2)]
 
             else:
-                if estOccupee(cdb, 3):
-                    res = [getCarteCDB(cdb, 3)]
-                elif estOccupee(cdb, 1):
-                    res = res + [getCarteCDB(cdb, 1)]
+                if CDB.estOccupee(cdb, 3):
+                    res = [CDB.getCarteCDB(cdb, 3)]
+                elif CDB.estOccupee(cdb, 1):
+                    res = res + [CDB.getCarteCDB(cdb, 1)]
 
     return res
 
@@ -458,8 +472,8 @@ Joueur.mettreEnReserve(joueur2,Main.getCarteMain(Joueur.getMain(joueur2),carte22
 
 print('Debut du jeu')
 
-joueurCourant=joueur1
-joueurAdverse=joueur2
+joueurCourant =joueur1
+joueurAdverse = joueur2
 
 # conscription fait référence au fait que le joueur peut, au cas où il n'a plus d'unités sur le champ de bataille, prendre dans sa réserve ou son royaume. Dans le cas où c'est possible de le faire conscritpion est égal à "possible", "impossible" sinon.
 conscription = "possible"
@@ -470,7 +484,7 @@ finguerre = False
 while not(executions(joueur1,joueur2)) and conscription == "possible" and not(finguerre) :
     # les condtions d'arrêts sont :
     # _ Si un des joueurs tue ou capture le roi adverse (execution)
-    # _ Si la conscritpion n'est pas possible pour un des joueurs (conscritpion)
+    # _ Si la conscription n'est pas possible pour un des joueurs (conscription)
     # _ Si les joueurs ne peuvent plus piocher (finguerre)
 
     print('C est au ',getNomJoueurCourant(),'de jouer')
@@ -496,17 +510,17 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
             # le joueur veut mettre une carte en réserve
             print('Choississez une carte de votre main que vous voulez mettre en réserve')
             # on affiche la main du joueur pour qu'il puisse choisir
-            print(mainToString(getMain(getJoueurCourant)))
+            print(Main.mainToString(Joueur.getMain(getJoueurCourant())))
             entree = input('Carte =')
-            carte = getCarteMain(getMain(getJoueurCourant()),entree)
-            mettreEnReserve(getJoueurCourant(),carte)
+            carte = Main.getCarteMain(Joueur.getMain(getJoueurCourant()),entree)
+            Joueur.mettreEnReserve(getJoueurCourant(),carte)
 
         elif ordre == 3:
             # le joueur veut déployer une unité
-            if not(ReserveIsEmpty(getReserve(getJoueurCourant()))) :
+            if not(Reserve.ReserveIsEmpty(Joueur.getReserve(getJoueurCourant()))) :
                 # si la réserve n'est pas vide alors on déploie la première unité de la réserve
-                carte = getFirstReserve(getReserve(getJoueurCourant()))
-                print('Ou voulez-vous mettre ',carteToString(carte),'?')
+                carte = Reserve.getFirstReserve(Joueur.getReserve(getJoueurCourant()))
+                print('Ou voulez-vous mettre ',Carte.carteToString(carte),'?')
                 position = int(input('Position ='))
                 deployer(getJoueurCourant(),carte,position,cdb)
 
@@ -514,9 +528,9 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                 # sinon on lui demande de choisir une des cartes de sa main
                 print('Choississez une carte de votre main que vous voulez déployer')
                 # on affiche la main du joueur pour qu'il puisse choisir
-                print(mainToString(getMain(getJoueurCourant)))
+                print(Main.mainToString(Joueur.getMain(getJoueurCourant())))
                 entree = input('Carte =')
-                carte = getCarteMain(getMain(getJoueurCourant()),entree)
+                carte = Main.getCarteMain(Joueur.getMain(getJoueurCourant()),entree)
                 position = int(input('Position ='))
                 deployer(getJoueurCourant(),carte,position,cdb)
 
@@ -524,17 +538,19 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
             # le joueur veut attaquer
             print('Mode combat activé')
             # on récupère la liste des unités que possède le joueur sur le champ de bataille
-            liste = getAttaquants(getJoueurCourant(),cdb)
+            listeCarte,listePos = getAttaquants(getJoueurCourant(),cdb)
+            pos = 0
 
-            for i in liste:
+            for i in listeCarte:
                 if not(executions(joueur1,joueur2)):
                     # si aucun roi n'est mort
                 
                     # pour toutes les cartes dans la liste des attaquants, on demande au joueur s'il veut attaquer avec
                     print('Voici les unités que peut atteindre votre unité')
-                    print(getCarteAttaquable(getJoueurCourant(),cdb,i))
-                    attaquable = getCarteAttaquable(getJoueurCourant(),cdb,i)
-                    print("Voulez vous attaquer avec ",carteToString(i),"? pour oui taper 1 pour non taper 0")
+                    print(getCarteAttaquable(getJoueurCourant(),cdb,i, listePos[pos]))
+                    attaquable = getCarteAttaquable(getJoueurCourant(),cdb,i, listePos[pos])
+                    print("Voulez vous attaquer avec ",Carte.carteToString(i),"? pour oui taper 1 pour non taper 0")
+                    pos = pos + 1
 
                     reponse = int(input('Réponse ='))
 
@@ -546,7 +562,7 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                             
                             if attaqueDone == False:
                                 
-                                print("Voulez vous attaquer ",carteToString(j)," avec ",carteToString(i)," ? pour oui taper 1 pour non taper 0")
+                                print("Voulez vous attaquer ",Carte.carteToString(j)," avec ",Carte.carteToString(i)," ? pour oui taper 1 pour non taper 0")
                                 
                                 reponse2 = int(input('Réponse ='))
 
@@ -558,100 +574,99 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                                     attaqueDone = True
 
                                     # si la carte est un soldat son attaque est egale au nombre de carte dans la main du joueur
-                                    if getTypeCarte(carteactif) == "soldat":
+                                    if Carte.getTypeCarte(carteactif) == "soldat":
                                         
-                                        setForceAttaque(carteactif,getTailleMain(getMain(getJoueurCourant())))
+                                        Carte.setForceAttaque(carteactif,Main.getTailleMain(Joueur.getMain(getJoueurCourant())))
                                     # si la valeur de l'attaque est égale à la valeur de la défense et que la carte attaquée n'a pas déjà subi de dégats, alors le joueur capture la carte.
-                                    if getForceAttaque(carteactif) == getForceDefense(cartepassif) and getEtatCarte(cartepassif) != "affaiblie" :
+                                    if Carte.getForceAttaque(carteactif) == Carte.getForceDefense(cartepassif) and Carte.getEtatCarte(cartepassif) != "affaiblie" :
                                         
                                         capturer(cdb,getJoueurCourant(),cartepassif)
                                         
                                     else :
                                         # sinon on retire les dégats des points de vie de la carte attaquée
-                                        setPDV(cartepassif,getPDV(cartepassif) - getForceAttaque(carteactif))
+                                        Carte.setPDV(cartepassif,Carte.getPDV(cartepassif) - Carte.getForceAttaque(carteactif))
                                         # si les points de vie de la carte attaquée sont à 0 ou moins, la carte meurt(déplacement vers le cimetière)
-                                        if getPDV(cartepassif) <= 0 :
+                                        if Carte.getPDV(cartepassif) <= 0 :
                                             
                                             mourir(getJoueurAdverse(),cartepassif,cdb)
                                     
                                 
 
                 # on modifie l'état de la carte qui vient d'attaquer, qui passe de l'état défensif à l'état offensif
-                setPosCarte(carteactif,offensive)
+                Carte.setPosCarte(carteactif,offensive)
                     
                 #au cas où une unité vient d'être tuée, on avance les cartes du joueur adverse
-                Avancer(getJoueurAdverse,cdb)
+                Avancer(getJoueurAdverse(),cdb)
                     
-                if CDBIsEmpty(getJoueurAdverse(),cdb) and not(executions(joueur1,joueur2)) :
+                if CDB.CDBIsEmpty(getJoueurAdverse(),cdb) and not(executions(joueur1,joueur2)) :
                     # si le champ de bataille est vide alors il doit conscrire , pour cela on change de joueur courant juste pour que le joueur qui n'a plus d'unité sur son champ de bataille puisse déployer
                     changeJoueurCourant()
                     # on regarde si le champ de bataille du joueur courant est vide pour savoir s'il doit recruter ou non des unités
-                    if getTailleReserve(getReserve(getJoueurCourant())) >= 2:
+                    if Reserve.getTailleReserve(Joueur.getReserve(getJoueurCourant())) >= 2:
                     # on regarde si le joueur possède plus de deux cartes dans sa réserve, si oui, les deux cartes de la conscription proviennent de sa réserve
-                        eltreserve = getFirstReserve(getReserve(getJoueurCourant()))
+                        eltreserve = Reserve.getFirstReserve(getReserve(Joueur.getJoueurCourant()))
 
-                        print('Ou voulez-vous mettre ',carteToString(eltreserve),'?')
+                        print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
                         position1 = int(input('Position ='))
                         deployer(getJoueurCourant(),eltreserve,position1,cdb)
 
-                        eltreserve = getFirstReserve(getReserve(getJoueurCourant()))
+                        eltreserve = Reserve.getFirstReserve(Joueur.getReserve(getJoueurCourant()))
 
-                        print('Ou voulez-vous mettre ',carteToString(eltreserve),'?')
+                        print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
                         position2 = int(input('Position ='))
 
                         while position2 == position1 :
                         # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
                             print('Une carte est déjà présente sur cette position veuillez choisir une nouvelle position !')
 
-                            print('Ou voulez-vous mettre ',carteToString(eltreserve),'?')
+                            print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
                             position2 = int(input('Position ='))
 
                             deployer(getJoueurCourant(),eltreserve,position2,cdb)
 
-                    elif getTailleReserve(getReserve(getJoueurCourant())) == 1 and not RoyaumeIsEmpty(getRoyaume(getJoueurCourant())):
+                    elif Reserve.getTailleReserve(Joueur.getReserve(getJoueurCourant())) == 1 and not Royaume.RoyaumeIsEmpty(Joueur.getRoyaume(getJoueurCourant())):
                     # si le joueur ne possède plus qu'une seule carte dans sa réserve et que son royaume contient au moins 1 carte
-                        eltreserve = getFirstReserve(getReserve(getJoueurCourant()))
+                        eltreserve = Reserve.getFirstReserve(Joueur.getReserve(getJoueurCourant()))
 
-                        print('Ou voulez-vous mettre ',carteToString(eltreserve),'?')
+                        print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
                         position1 = int(input('Position ='))
 
                         deployer(getJoueurCourant(),eltreserve,position1,cdb)
 
 
                         print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
-                        print(royaumeToString(getRoyaume(getJoueurCourant())))
+                        print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
                         entree = input('Carte =')
-                        carte = getCarteRoyaume(getRoyaume(getJoueurCourant()),entree)
+                        carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
                         position2 = int(input('Position ='))
 
                         while position2 == position1:
                         # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
                             print('Une carte est déjà présente sur cette position veuillez choisir une nouvelle position !')
 
-                            print('Ou voulez-vous mettre ',carteToString(carte),'?')
+                            print('Ou voulez-vous mettre ',Carte.carteToString(carte),'?')
                             position2 = int(input('Position ='))
 
                         deployer(getJoueurCourant(),carte,position2,cdb)
 
 
-                    elif getTailleRoyaume(getRoyaume(getJoueurCourant())) >= 2:
+                    elif Royaume.getTailleRoyaume(Joueur.getRoyaume(getJoueurCourant())) >= 2:
                     # si le joueur ne possède plus de carte dans sa réserve et que son royaume possède au moins 2 cartes
                         print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
-                        print(royaumeToString(getRoyaume(getJoueurCourant())))
+                        print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
                         entree = input('Carte =')
-                        carte = getCarteRoyaume(getRoyaume(getJoueurCourant()),entree)
+                        carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
                         position1 = int(input('Position ='))
                         deployer(getJoueurCourant(),carte,position1,cdb)
-
                         print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
-                        print(royaumeToString(getRoyaume(getJoueurCourant())))
+                        print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
                         entree = input('Carte =')
-                        carte = getCarteRoyaume(getRoyaume(getJoueurCourant()),entree)
+                        carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
                         position2 = int(input('Position ='))
 
                         while position2 == position1:
                         # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
-                            print('Ou voulez-vous mettre ',carteToString(carte),'?')
+                            print('Ou voulez-vous mettre ',Carte.carteToString(carte),'?')
                             position2 = int(input('Position ='))
 
                         deployer(getJoueurCourant(),carte,position2,cdb)
@@ -671,13 +686,14 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
         print('Initialisation phase 3')
         
         if conscription == 'possible' and not(executions(joueur1,joueur2)): 
-                if getTailleMain(getJoueurCourant()) >= 6 :
+                if Main.getTailleMain(Joueur.getMain(getJoueurCourant())) >= 6 :
                     # si le joueur au moins 6 cartes dans sa main, il est obligé de démobiliser.
                     print('Quelle carte voulez-vous démobiliser ?')
                     # on lui affiche les cartes qu'il possède dans sa main
-                    print(mainToString(getMain(getJoueurCourant())))
+                    print(Main.mainToString(Joueur.getMain(getJoueurCourant())))
                     carte = input('Carte =')
-                    demobiliser(carte,getJoueurCourant)
+                    # TODO ??? Retrouver l'objet carte ???
+                    Joueur.demobiliser(getJoueurCourant(), Main.getCarteMain(Joueur.getMain(getJoueurCourant()),carte))
 
                 print('Voulez-vous démobilisez ? 1 pour oui, 0 pour non')
                 reponse = int(input('Réponse ='))
@@ -689,9 +705,11 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                 # si le joueur veut démobiliser
                     print('Quelle carte voulez-vous démobiliser ?')
                     # on lui affiche les cartes qu'il possède dans sa main
-                    print(mainToString(getMain(getJoueurCourant())))
+                    print(Main.mainToString(Joueur.getMain(getJoueurCourant())))
                     carte = input('Carte =')
-                    demobiliser(carte,joueur1)
+                    # TODO ??? Retrouver l'objet carte ???
+                    #Joueur.demobiliser(joueur1,carte)
+                    Joueur.demobiliser(getJoueurCourant(), Main.getCarteMain(Joueur.getMain(getJoueurCourant()),carte))
                     
                 else :
                     print('erreur, c est dommage !')
@@ -700,7 +718,7 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
         # si le joueur ne peut plus piocher
         finguerre = True
 
-    print('Fin du tour du ',getJoueurCourant())
+    print('Fin du tour du ',getNomJoueurCourant())
     # on change de joueur
     changeJoueurCourant()
 
