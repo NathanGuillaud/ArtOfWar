@@ -1,19 +1,3 @@
-# -----
-# Manque classe lors de l'appel des fonctions
-# Certains objets mal créés : e : newc = Carte.creerSoldat() au lieu de newc = Carte() puis newc.creerSoldat() 
-# Inversions des paramètres d'appel dans les fonctions
-# Nombre de paramètres erronné dana sle sappels de fonctions
-# Objet passé au fonctions pas du bon type (e : <str> carte au lieu de <Carte> carte
-# Gestion des joueurs (joueur courant vs adverse) => utilisation de variables globales
-# A l'init, manque certaines créations d'instances d'objets (ex : Joueur, Picohe)
-# Imports ?
-#Manque de la position dans la récupération de la liste des cartes attaquables
-#Récupération de la position des cartes sur le cbd avec la fonction getAttaquants
-#Gestion des erreurs de saisie ?
-# Manipulation de string au lieu de d'objets après saisie
-# Visibilité joueur courant => afficher message lors des permutations de joueurs (pas seuelment en fin de tour)
-# -----
-
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -32,7 +16,6 @@ from Reserve import *
 from Royaume import *
 from Cimetiere import *
 from random import *
-from xdg.Mime import MagicDB
 
 ##### Fonction Programme Principal :
 

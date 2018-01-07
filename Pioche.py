@@ -10,7 +10,6 @@ import random
 from Carte import *
 from Main import *
 class Pioche:
-
     # creerPioche : -> Pioche
     # description : creer une pioche avec 9 soldat, 6 gardes et 5 archers répartie dans la pioche de manière aléatoire
     # poscondition : - getTaillePioche(creerPioche()) == 20
