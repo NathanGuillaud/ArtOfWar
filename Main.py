@@ -30,7 +30,6 @@ class Main:
     # precondition : on n'enleve pas la carte si la main est vide
     # postcondition: getTailleMain(supprimerMain(main,carte)) == getTailleMain(main,carte) - 1
     def supprimerMain(self,carte):
-       
         self.main.remove(carte)
         Carte.setZoneCarte(carte,"")
         return self.main

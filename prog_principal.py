@@ -11,6 +11,7 @@
 #Récupération de la position des cartes sur le cbd avec la fonction getAttaquants
 #Gestion des erreurs de saisie ?
 # Manipulation de string au lieu de d'objets après saisie
+# Visibilité joueur courant => afficher message lors des permutations de joueurs (pas seuelment en fin de tour)
 # -----
 
 #!/usr/bin/python
@@ -31,6 +32,7 @@ from Reserve import *
 from Royaume import *
 from Cimetiere import *
 from random import *
+from xdg.Mime import MagicDB
 
 ##### Fonction Programme Principal :
 
@@ -57,6 +59,7 @@ def getJoueurAdverse():
 def changeJoueurCourant():
     global joueurCourant, joueurAdverse
     joueurCourant, joueurAdverse = joueurAdverse, joueurCourant
+    print("Le joueur courant est {}".format(getNomJoueurCourant()))
 
 
 # deployer : Joueur x Carte x int x CDB -> Partie
@@ -90,8 +93,8 @@ def deployer(joueur, carte, position, cdb):
 
         if (zoneCarte == "reserve"):
             Reserve.supprimerReserve(Joueur.getReserve(joueur),carte)
-        else:
-            Main.supprimerMain(Joueur.getMain(joueur),carte)
+        #else:
+            #Main.supprimerMain(Joueur.getMain(joueur),carte)
     else:
         return 0
 
@@ -101,16 +104,15 @@ def deployer(joueur, carte, position, cdb):
 def mourir(joueur, carte, cdb):
     i = 1  # Compteur
     trouve = False
-    while (
-            i < 13 and trouve == False):  # Tant qu'on est pas à la fin du Champ de bataille et que la carte n'a pas été supprimée
+    while (i < 13 and trouve == False):  # Tant qu'on est pas à la fin du Champ de bataille et que la carte n'a pas été supprimée
         c = CDB.getCarteCDB(cdb, i)  # On récupère la carte à une position
 
-        if (Joueur.getPDV(c) < 0) and (
-            c == carte):  # Si les points de vie de la carte sur cette position sont négatifs, et que c'est la carte donnée en paramètres
-            CDB.supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
-            cimetiere = Joueur.getCimetiere(joueur)  # On récupère le cimetière du joueur
-            Cimetiere.ajouterCimetiere(cimetiere, carte)  # On ajoute la carte au cimetière
-            trouve = True
+        if (c != ""):
+            if (Carte.getPDV(c) < 0) and (c == carte):  # Si les points de vie de la carte sur cette position sont négatifs, et que c'est la carte donnée en paramètres
+                CDB.supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
+                cimetiere = Joueur.getCimetiere(joueur)  # On récupère le cimetière du joueur
+                Cimetiere.ajouterCimetiere(cimetiere, carte)  # On ajoute la carte au cimetière
+                trouve = True
         i = i + 1  # Incrémentation du compteur
 
 
@@ -119,16 +121,15 @@ def mourir(joueur, carte, cdb):
 def capturer(cdb, joueur, carte):
     i = 1  # Compteur
     trouve = False
-    while (
-            i < 13 and trouve == False):  # Tant qu'on est pas à la fin du Champ de bataille et que la carte n'a pas été supprimée
+    while (i < 13 and trouve == False):  # Tant qu'on est pas à la fin du Champ de bataille et que la carte n'a pas été supprimée
         c = CDB.getCarteCDB(cdb, i)  # On récupère la carte à une position
 
-        if (Joueur.getPDV(c) == 0) and (
-            c == carte):  # Si les points de vie de la carte sur cette position sont nuls, et que c'est la carte donnée en paramètres
-            CDB.supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
-            royaume = Joueur.getRoyaume(joueur)  # On récupère le royaume du joueur
-            Royaume.ajouterRoyaume(royaume, carte)  # On ajoute la carte au royaume
-            trouve = True
+        if (c != ""):
+            if (Carte.getPDV(c) == 0) and (c == carte):  # Si les points de vie de la carte sur cette position sont nuls, et que c'est la carte donnée en paramètres
+                CDB.supprimerCDB(cdb, carte, i)  # On supprime la carte du champ de bataille
+                royaume = Joueur.getRoyaume(joueur)  # On récupère le royaume du joueur
+                Royaume.ajouterRoyaume(royaume, carte)  # On ajoute la carte au royaume
+                trouve = True
         i = i + 1  # Incrémentation du compteur
 
 
@@ -185,11 +186,11 @@ def CDBIsEmpty(joueur, cdb):
     res = True
     if joueur == joueur1:
         for i in range(1, 7):
-            if estOccupee(cdb, i):
+            if CDB.estOccupee(cdb, i):
                 res = False
     else:
         for i in range(7, 12):
-            if estOccupee(cdb, i):
+            if CDB.estOccupee(cdb, i):
                 res = False
     return res
 
@@ -537,7 +538,7 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
 
             else :
                 # sinon on lui demande de choisir une des cartes de sa main
-                print('Choississez une carte de votre main que vous voulez déployer')
+                print('Choisissez une carte de votre main que vous voulez déployer')
                 # on affiche la main du joueur pour qu'il puisse choisir
                 print(Main.mainToString(Joueur.getMain(getJoueurCourant())))
                 entree = input('Carte =')
@@ -558,13 +559,14 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                 
                     # pour toutes les cartes dans la liste des attaquants, on demande au joueur s'il veut attaquer avec
                     print('Voici les unités que peut atteindre votre unité')
-                    print(getCarteAttaquable(getJoueurCourant(),cdb,i, listePos[pos]))
+                    for carteList in getCarteAttaquable(getJoueurCourant(),cdb,i, listePos[pos]):
+                        print(Carte.carteToString(carteList))
                     attaquable = getCarteAttaquable(getJoueurCourant(),cdb,i, listePos[pos])
                     print("Voulez vous attaquer avec ",Carte.carteToString(i),"? pour oui taper 1 pour non taper 0")
                     pos = pos + 1
 
                     reponse = int(input('Réponse ='))
-
+                    carteactif = None;
                     if reponse == 1:
                     # lorsque le joueur veut attaquer avec la carte i
                         for j in attaquable:
@@ -572,8 +574,6 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                             attaqueDone = False
                             
                             if attaqueDone == False:
-                                print(i)
-                                print(j)
                                 
                                 print("Voulez vous attaquer ",Carte.carteToString(j)," avec ",Carte.carteToString(i)," ? pour oui taper 1 pour non taper 0")
                                 
@@ -603,94 +603,98 @@ while not(executions(joueur1,joueur2)) and conscription == "possible" and not(fi
                                             
                                             mourir(getJoueurAdverse(),cartepassif,cdb)
                                 else:
-                                    print("ERREUR car pas d'autres carte a attaquer")
-                # on modifie l'état de la carte qui vient d'attaquer, qui passe de l'état défensif à l'état offensif
-                Carte.setPosCarte(carteactif,offensive)
-                    
-                #au cas où une unité vient d'être tuée, on avance les cartes du joueur adverse
-                Avancer(getJoueurAdverse(),cdb)
-                    
-                if CDB.CDBIsEmpty(getJoueurAdverse(),cdb) and not(executions(joueur1,joueur2)) :
-                    # si le champ de bataille est vide alors il doit conscrire , pour cela on change de joueur courant juste pour que le joueur qui n'a plus d'unité sur son champ de bataille puisse déployer
-                    changeJoueurCourant()
-                    # on regarde si le champ de bataille du joueur courant est vide pour savoir s'il doit recruter ou non des unités
-                    if Reserve.getTailleReserve(Joueur.getReserve(getJoueurCourant())) >= 2:
-                    # on regarde si le joueur possède plus de deux cartes dans sa réserve, si oui, les deux cartes de la conscription proviennent de sa réserve
-                        eltreserve = Reserve.getFirstReserve(getReserve(Joueur.getJoueurCourant()))
-
-                        print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
-                        position1 = int(input('Position ='))
-                        deployer(getJoueurCourant(),eltreserve,position1,cdb)
-
-                        eltreserve = Reserve.getFirstReserve(Joueur.getReserve(getJoueurCourant()))
-
-                        print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
-                        position2 = int(input('Position ='))
-
-                        while position2 == position1 :
-                        # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
-                            print('Une carte est déjà présente sur cette position veuillez choisir une nouvelle position !')
-
+                                    print("ERREUR car pas d'autres cartes a attaquer")
+                                    
+                if (carteactif is not None):
+                    # on modifie l'état de la carte qui vient d'attaquer, qui passe de l'état défensif à l'état offensif
+                    Carte.setPosCarte(carteactif,"offensive")
+                        
+                    #au cas où une unité vient d'être tuée, on avance les cartes du joueur adverse
+                    Avancer(getJoueurAdverse(),cdb)
+                        
+                    if CDBIsEmpty(getJoueurAdverse(),cdb) and not(executions(joueur1,joueur2)) :
+                        # si le champ de bataille est vide alors il doit conscrire , pour cela on change de joueur courant juste pour que le joueur qui n'a plus d'unité sur son champ de bataille puisse déployer
+                        print("on change de joueur")
+                        changeJoueurCourant()
+                        # on regarde si le champ de bataille du joueur courant est vide pour savoir s'il doit recruter ou non des unités
+                        if Reserve.getTailleReserve(Joueur.getReserve(getJoueurCourant())) >= 2:
+                        # on regarde si le joueur possède plus de deux cartes dans sa réserve, si oui, les deux cartes de la conscription proviennent de sa réserve
+                            eltreserve = Reserve.getFirstReserve(getReserve(Joueur.getJoueurCourant()))
+    
+                            print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
+                            position1 = int(input('Position ='))
+                            deployer(getJoueurCourant(),eltreserve,position1,cdb)
+    
+                            eltreserve = Reserve.getFirstReserve(Joueur.getReserve(getJoueurCourant()))
+    
                             print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
                             position2 = int(input('Position ='))
-
-                            deployer(getJoueurCourant(),eltreserve,position2,cdb)
-
-                    elif Reserve.getTailleReserve(Joueur.getReserve(getJoueurCourant())) == 1 and not Royaume.RoyaumeIsEmpty(Joueur.getRoyaume(getJoueurCourant())):
-                    # si le joueur ne possède plus qu'une seule carte dans sa réserve et que son royaume contient au moins 1 carte
-                        eltreserve = Reserve.getFirstReserve(Joueur.getReserve(getJoueurCourant()))
-
-                        print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
-                        position1 = int(input('Position ='))
-
-                        deployer(getJoueurCourant(),eltreserve,position1,cdb)
-
-
-                        print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
-                        print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
-                        entree = input('Carte =')
-                        carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
-                        position2 = int(input('Position ='))
-
-                        while position2 == position1:
-                        # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
-                            print('Une carte est déjà présente sur cette position veuillez choisir une nouvelle position !')
-
-                            print('Ou voulez-vous mettre ',Carte.carteToString(carte),'?')
+    
+                            while position2 == position1 :
+                            # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
+                                print('Une carte est déjà présente sur cette position veuillez choisir une nouvelle position !')
+    
+                                print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
+                                position2 = int(input('Position ='))
+    
+                                deployer(getJoueurCourant(),eltreserve,position2,cdb)
+    
+                        elif Reserve.getTailleReserve(Joueur.getReserve(getJoueurCourant())) == 1 and not Royaume.RoyaumeIsEmpty(Joueur.getRoyaume(getJoueurCourant())):
+                        # si le joueur ne possède plus qu'une seule carte dans sa réserve et que son royaume contient au moins 1 carte
+                            eltreserve = Reserve.getFirstReserve(Joueur.getReserve(getJoueurCourant()))
+    
+                            print('Ou voulez-vous mettre ',Carte.carteToString(eltreserve),'?')
+                            position1 = int(input('Position ='))
+    
+                            deployer(getJoueurCourant(),eltreserve,position1,cdb)
+    
+    
+                            print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
+                            print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
+                            entree = input('Carte =')
+                            carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
                             position2 = int(input('Position ='))
-
-                        deployer(getJoueurCourant(),carte,position2,cdb)
-
-
-                    elif Royaume.getTailleRoyaume(Joueur.getRoyaume(getJoueurCourant())) >= 2:
-                    # si le joueur ne possède plus de carte dans sa réserve et que son royaume possède au moins 2 cartes
-                        print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
-                        print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
-                        entree = input('Carte =')
-                        carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
-                        position1 = int(input('Position ='))
-                        deployer(getJoueurCourant(),carte,position1,cdb)
-                        print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
-                        print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
-                        entree = input('Carte =')
-                        carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
-                        position2 = int(input('Position ='))
-
-                        while position2 == position1:
-                        # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
-                            print('Ou voulez-vous mettre ',Carte.carteToString(carte),'?')
+    
+                            while position2 == position1:
+                            # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
+                                print('Une carte est déjà présente sur cette position veuillez choisir une nouvelle position !')
+    
+                                print('Ou voulez-vous mettre ',Carte.carteToString(carte),'?')
+                                position2 = int(input('Position ='))
+    
+                            deployer(getJoueurCourant(),carte,position2,cdb)
+    
+    
+                        elif Royaume.getTailleRoyaume(Joueur.getRoyaume(getJoueurCourant())) >= 2:
+                        # si le joueur ne possède plus de carte dans sa réserve et que son royaume possède au moins 2 cartes
+                            print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
+                            print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
+                            entree = input('Carte =')
+                            #TODO la carte n'est pas un obket carte !!!!! donc deployer KO
+                            carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
+                            position1 = int(input('Position ='))
+                            deployer(getJoueurCourant(),carte,position1,cdb)
+                            print('Quelle carte voulez-vous mettre sur le champ de bataille et où ?')
+                            print(Royaume.royaumeToString(Joueur.getRoyaume(getJoueurCourant())))
+                            entree = input('Carte =')
+                            carte = Royaume.getCarteRoyaume(Joueur.getRoyaume(getJoueurCourant()),entree)
                             position2 = int(input('Position ='))
-
-                        deployer(getJoueurCourant(),carte,position2,cdb)
-
-                    else :
-                        # le joueur n'a plus assez de cartes pour en mettre 2 sur le champ de bataille
-                        conscription = 'impossible'
-                    # on rechange de joueur pour que le joueur qui jouait initialement finisse son tour
-                    changeJoueurCourant()
-                    
-                    
-
+    
+                            while position2 == position1:
+                            # le joueur ne doit pas mettre 2 fois la même position sinon il n'y aura qu'une seule carte sur le champ de bataille
+                                print('Ou voulez-vous mettre ',Carte.carteToString(carte),'?')
+                                position2 = int(input('Position ='))
+    
+                            deployer(getJoueurCourant(),carte,position2,cdb)
+    
+                        else :
+                            # le joueur n'a plus assez de cartes pour en mettre 2 sur le champ de bataille
+                            print("Conscription impossible")
+                            conscription = 'impossible'
+                        
+                        # on rechange de joueur pour que le joueur qui jouait initialement finisse son tour
+                        print("on change de joueur")
+                        changeJoueurCourant()
         else:
             # si le joueur n'a pas mis 1,2,3 ou 4, il passe son tour ( il n'écoute pas c'est de sa faute)
             print('erreur, vous n avez pas suivi les consignes, vous passez votre tour')

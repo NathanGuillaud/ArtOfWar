@@ -27,7 +27,6 @@ class CDB:
     #               Meme chose pour le 2eme Joueur mais en commençant par 7 jusqu'a 12.
     # precondition : 1 <= position <= 12
     def ajouterCDB(self,carte,position):
-        print("ajouterCDB {}".format(carte))
         self.cdb[str(position)] = carte
         Carte.setZoneCarte(carte,"cdb")
         return self.cdb
@@ -59,7 +58,6 @@ class CDB:
     #               Meme chose pour le 2eme Joueur mais en commençant par 7 jusqu'a 12.
     # precondition : 1 <= position < 12
     def getCarteCDB(self, position):
-        print("getCarteCDB {}".format(self.cdb[str(position)]))
         return self.cdb[str(position)]
 
     # avancerCarte : CDB x carte -> CDB

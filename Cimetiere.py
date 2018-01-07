@@ -7,6 +7,7 @@
 
 # classe Cimetiere
 
+from Carte import *
 class Cimetiere:
     # creerCimetiere : -> Cimetiere
     # description : creer un Cimetiere Vide
@@ -17,8 +18,8 @@ class Cimetiere:
     # ajouterCimetiere : Cimetiere x carte -> Cimetiere
     # description : ajoute la carte au cimetiere
     def ajouterCimetiere(self,carte):
-        self.self.append(carte)
-        Main.setZoneCarte(carte,"cimetiere")
+        self.cimetiere.append(carte)
+        Carte.setZoneCarte(carte,"cimetiere")
         return self.cimetiere
 
     # supprimerCimetiere : Cimetiere x carte -> Cimetiere

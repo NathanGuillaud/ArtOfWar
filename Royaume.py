@@ -34,7 +34,7 @@ class Royaume:
             print("Le roi ne peut pas etre ajouté au Royaume !")
             return self.royaume
         else:
-            self.royaume[carte.carte["type"]].append(carte.carte)
+            self.royaume[carte.carte["type"]].append(carte)
             Carte.setZoneCarte(carte,"royaume")
         return self.royaume
 
@@ -75,7 +75,7 @@ class Royaume:
     # RoyaumeIsEmpty : Royaume -> boolean
     # description : renvoie vrai si le Royaume est vide. Faux sinon
     def RoyaumeIsEmpty(self):
-        return getTailleRoyaume(self.royaume) == 0
+        return self.getTailleRoyaume() == 0
 
     # getElementsRoyaume : Royaume -> List[Carte]
     # description : renvoie la liste des cartes dans le royaume du joueur
@@ -87,7 +87,7 @@ class Royaume:
     # description : renvoie le nombre d'elements de chaque type de carte sous forme de texte
     #               exemple : "Royaume :  Archer = 2, Garde = 0, Soldat = 1"
     def royaumeToString(self):
-        return "Royaume : Archer = " + str(getNbArcher(self.royaume)) + ", Garde = " + str(getNbGarde(self.royaume)) + ", Soldat = " + str(getNbSoldat(self.royaume))
+        return "Royaume : Archer = " + str(self.getNbArcher()) + ", Garde = " + str(self.getNbGarde()) + ", Soldat = " + str(self.getNbSoldat())
 
     # getCarteRoyaume : Royaume x Text -> Carte
     # description : renvoie la carte dans le royaume correspondant au texte rentree, si plusieurs occurences renvoie la 1er occurence

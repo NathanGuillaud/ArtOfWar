@@ -137,7 +137,7 @@ class Carte:
     # getForceAttaque: Carte -> int
     # description : renvoie la valeur de la force d'attaque de la carte
     def getForceAttaque(self):
-        return self.carte["attaque"]
+        return int(self.carte["attaque"])
 
     # getZoneCarte: Carte -> Text
     # description : renvoie la zone ou se trouve la carte
@@ -148,12 +148,12 @@ class Carte:
     # getForceDefense: carte -> int
     # description : renvoie la valeur de la force de defense de la carte
     def getForceDefense(self):
-        return self.carte["defense"]
+        return int(self.carte["defense"])
 
     # getPDV : carte -> int
     # description : renvoie la valeur des points de vie de la carte
     def getPDV(self):
-        return self.carte["pdv"]
+        return int(self.carte["pdv"])
 
     # setTypeCarte : Carte x Text -> Carte
     # description : modifie le type de la carte

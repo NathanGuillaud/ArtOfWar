@@ -24,7 +24,6 @@ class Reserve:
     #                - getTailleReserve(ajouterReserve(reserve,carte)) == getTailleReserve(reserve,carte) +1
     #                - ReserveIsEmpty(ajouterReserve(reserve,carte)) == False
     def ajouterReserve(self,carte):
-        print(carte)
         self.reserve.append(carte)
         Carte.setZoneCarte(carte,"reserve")
         return self.reserve
