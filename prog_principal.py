@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # Realise par:
@@ -8,13 +8,9 @@
 #### Importations :
 
 from Joueur import *
-from Main import *
 from Pioche import *
 from CDB import *
 from Carte import *
-from Reserve import *
-from Royaume import *
-from Cimetiere import *
 from random import *
 
 ##### Fonction Programme Principal :
@@ -408,10 +404,10 @@ Joueur.setPioche(joueur2,pioche2)
 
 for i in range(4):
     carte = Carte()
-    carte = Pioche.getFirstPioche(pioche1)
+    carte = pioche1.getFirstPioche()
     joueur1.getMain().ajouterMain(carte)
 
-    carte = Pioche.getFirstPioche(pioche2)
+    carte = pioche2.getFirstPioche()
     joueur2.getMain().ajouterMain(carte)
     #carte = Pioche.getFirstPioche(pioche2)
     #Main.ajouterMain(Joueur.getMain(joueur2), carte)
@@ -420,12 +416,12 @@ for i in range(4):
 # On recupere la liste des cartes dans la main et on en prend une au hasard avec la fonction random
 
 hasard = randint(0, 3)
-liste = Main.getElementsMain(Joueur.getMain(joueur1))
-Joueur.demobiliser(joueur1,liste[hasard])
+liste = joueur1.getMain().getElementsMain()
+joueur1.demobiliser(liste[hasard])
 
 hasard = randint(0, 3)
-liste = Main.getElementsMain(Joueur.getMain(joueur2))
-Joueur.demobiliser(joueur2,liste[hasard])
+liste = joueur2.getMain().getElementsMain()
+joueur2.demobiliser(liste[hasard])
 
 # On cree et insère ensuite les rois dans la main pour eviter de le demobiliser
 # le joueur 1 obtient le roi de type 1 et le jouieur 2 obtient le roi de type 2
@@ -435,36 +431,36 @@ roi1.creerRoi1()
 roi2 = Carte()
 roi2.creerRoi2()
 
-Main.ajouterMain(Joueur.getMain(joueur1),roi1)
-Main.ajouterMain(Joueur.getMain(joueur2),roi2)
+joueur1.getMain().ajouterMain(roi1)
+joueur2.getMain().ajouterMain(roi2)
 
 # On affiche la main du joueur, puis on lui demande de choisir une des cartes qu'il possède dans sa main, on lui demande aussi une position. Finalement on deploie cette carte sur la position. Attention !!! la position doit être une position du front.
 
 print('Joueur 1 quelle carte voulez-vous placer sur le champ de bataille ? et où voulez-vous la placer ?')
-print(Main.mainToString(Joueur.getMain(joueur1)))
+print(joueur1.getMain().mainToString())
 carte1 = input('Carte = ')
 position1 = int(input('Position = '))
-carteObj1 = Main.getCarteMain(Joueur.getMain(joueur1), carte1)
+carteObj1 = joueur1.getMain().getCarteMain(carte1)
 deployer(joueur1,carteObj1,position1,cdb)
 
 print('Joueur 2 quelle carte voulez-vous placer sur le champ de bataille ? et où voulez-vous la placer ?')
-print(Main.mainToString(Joueur.getMain(joueur2)))
+print(joueur2.getMain().mainToString())
 carte2 = input('Carte = ')
 position2 = int(input('Position = '))
-carteObj2 = Main.getCarteMain(Joueur.getMain(joueur2), carte2)
+carteObj2 = joueur2.getMain().getCarteMain(carte2)
 deployer(joueur2,carteObj2,position2,cdb)
 
 # On affiche la main du joueur, puis on lui demande de choisir une des cartes qu'il possède dans sa main. On met ensuite cette carte dans sa reserve
 
 print('Joueur 1 quelle carte voulez vous mettre en réserve?')
-print(Main.mainToString(Joueur.getMain(joueur1)))
+print(joueur1.getMain().mainToString())
 carte11 = input('Carte =')
-Joueur.mettreEnReserve(joueur1,Main.getCarteMain(Joueur.getMain(joueur1),carte11))
+joueur1.mettreEnReserve(joueur1.getMain().getCarteMain(carte11))
 
 print('Joueur 2 quelle carte voulez vous mettre en réserve?')
-print(Main.mainToString(Joueur.getMain(joueur2)))
+print(joueur2.getMain().mainToString())
 carte22 = input('Carte =')
-Joueur.mettreEnReserve(joueur2,Main.getCarteMain(Joueur.getMain(joueur2),carte22))
+joueur2.mettreEnReserve(joueur2.getMain().getCarteMain(carte22))
 
 #### Debut du jeu :
 
